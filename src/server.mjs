@@ -17,6 +17,7 @@ import {
 } from './picos.mjs';
 import { buscarCamerasClimaAoVivo } from './climaaovivo.mjs';
 import { buscarCamerasSkyline } from './skyline.mjs';
+import { buscarCamerasIframe } from './iframes.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PASTA_RAIZ = resolve(__dirname, '..');
@@ -204,6 +205,11 @@ export function criarServidor({
             erro: erro?.message || 'Falha ao buscar SkylineWebcams.',
           });
         }
+      }
+
+      if (metodo === 'GET' && caminho === '/api/iframes') {
+        const cameras = buscarCamerasIframe();
+        return enviarJson(res, 200, { total: cameras.length, cameras });
       }
 
       if (metodo === 'GET' && caminho === '/api/surfconnect') {

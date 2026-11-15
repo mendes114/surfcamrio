@@ -48,11 +48,16 @@ function destroyFarthest() {
   }
 }
 
-function showPlayButton(id, urls, container, ytId) {
+function showPlayButton(id, urls, container, ytId, iframeUrl) {
   const wrap = el('div', 'cam-play-wrap');
   const btn = el('button', 'cam-play-btn');
   btn.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>';
-  btn.onclick = () => { destroyFarthest(); ytId ? startYouTube(id, ytId, container) : startPlayer(id, urls, container); };
+  btn.onclick = () => {
+    destroyFarthest();
+    if (iframeUrl) startIframe(id, iframeUrl, container);
+    else if (ytId) startYouTube(id, ytId, container);
+    else startPlayer(id, urls, container);
+  };
   wrap.appendChild(btn);
   container.replaceChildren(wrap);
 }
@@ -62,6 +67,18 @@ function startYouTube(id, ytId, container) {
   const iframe = document.createElement('iframe');
   iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
   iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+  iframe.allowFullscreen = true;
+  iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0';
+  container.style.position = 'relative';
+  container.replaceChildren(iframe);
+  activeHls.set(id, { hls: null, video: null, container, iframe });
+}
+
+function startIframe(id, url, container) {
+  if (activeHls.has(id)) return;
+  const iframe = document.createElement('iframe');
+  iframe.src = url;
+  iframe.allow = 'autoplay; encrypted-media';
   iframe.allowFullscreen = true;
   iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0';
   container.style.position = 'relative';
@@ -126,19 +143,22 @@ const observer = new IntersectionObserver((entries) => {
     const id = card.dataset.id;
     const urls = JSON.parse(card.dataset.urls || '[]');
     const ytId = card.dataset.ytid || null;
-    if (!id || (!urls.length && !ytId)) continue;
+    const iframeUrl = card.dataset.iframeurl || null;
+    if (!id || (!urls.length && !ytId && !iframeUrl)) continue;
     const videoBox = card.querySelector('.cam-video');
     if (!videoBox) continue;
 
     if (entry.isIntersecting) {
       if (!activeHls.has(id) && activeHls.size < MAX_PLAYERS) {
-        ytId ? startYouTube(id, ytId, videoBox) : startPlayer(id, urls, videoBox);
+        if (iframeUrl) startIframe(id, iframeUrl, videoBox);
+        else if (ytId) startYouTube(id, ytId, videoBox);
+        else startPlayer(id, urls, videoBox);
       } else if (!activeHls.has(id)) {
-        showPlayButton(id, urls, videoBox, ytId);
+        showPlayButton(id, urls, videoBox, ytId, iframeUrl);
       }
     } else {
       destroyPlayer(id);
-      showPlayButton(id, urls, videoBox, ytId);
+      showPlayButton(id, urls, videoBox, ytId, iframeUrl);
     }
   }
 }, { rootMargin: '200px 0px' });
@@ -158,12 +178,14 @@ function criarCard(cam) {
   const card = el('article', 'cam');
   card.dataset.id = cam.id;
   const isYt = cam.streamType === 'youtube' && cam.youtubeId;
-  const urls = isYt ? [] : (Array.isArray(cam.streamUrl) ? cam.streamUrl : [cam.streamUrl]);
+  const isIframe = cam.streamType === 'iframe' && cam.iframeUrl;
+  const urls = (isYt || isIframe) ? [] : (Array.isArray(cam.streamUrl) ? cam.streamUrl : [cam.streamUrl]);
   card.dataset.urls = JSON.stringify(urls);
   if (isYt) card.dataset.ytid = cam.youtubeId;
+  if (isIframe) card.dataset.iframeurl = cam.iframeUrl;
 
   const videoBox = el('div', 'cam-video');
-  showPlayButton(cam.id, urls, videoBox, isYt ? cam.youtubeId : null);
+  showPlayButton(cam.id, urls, videoBox, isYt ? cam.youtubeId : null, isIframe ? cam.iframeUrl : null);
   card.appendChild(videoBox);
 
   const info = el('div', 'cam-info');
@@ -188,12 +210,13 @@ function fetchComTimeout(url, ms = 30000) {
 }
 
 async function carregarTudo() {
-  const [resSV, resWZ, resSC, resCAV, resSKY] = await Promise.allSettled([
+  const [resSV, resWZ, resSC, resCAV, resSKY, resIFR] = await Promise.allSettled([
     fetchComTimeout('/api/surfview', 45000),
     fetchComTimeout('/api/macumba', 45000),
     fetchComTimeout('/api/surfconnect', 45000),
     fetchComTimeout('/api/climaaovivo', 45000),
     fetchComTimeout('/api/skyline', 45000),
+    fetchComTimeout('/api/iframes', 5000),
   ]);
 
   const todas = [];
@@ -257,6 +280,15 @@ async function carregarTudo() {
 
   if (resSKY.status === 'fulfilled') {
     const cams = (resSKY.value.cameras || []).filter(c => c.youtubeId);
+    for (const c of cams) {
+      if (idsVistos.has(c.id)) continue;
+      idsVistos.add(c.id);
+      todas.push(c);
+    }
+  }
+
+  if (resIFR.status === 'fulfilled') {
+    const cams = (resIFR.value.cameras || []).filter(c => c.iframeUrl);
     for (const c of cams) {
       if (idsVistos.has(c.id)) continue;
       idsVistos.add(c.id);
