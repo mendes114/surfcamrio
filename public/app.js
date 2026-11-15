@@ -28,6 +28,7 @@ function destroyPlayer(id) {
   if (!entry) return;
   try { entry.hls?.destroy(); } catch {}
   try { entry.video?.pause(); entry.video?.removeAttribute('src'); entry.video?.load(); } catch {}
+  try { entry.iframe?.remove(); } catch {}
   activeHls.delete(id);
 }
 
@@ -47,13 +48,25 @@ function destroyFarthest() {
   }
 }
 
-function showPlayButton(id, urls, container) {
+function showPlayButton(id, urls, container, ytId) {
   const wrap = el('div', 'cam-play-wrap');
   const btn = el('button', 'cam-play-btn');
   btn.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>';
-  btn.onclick = () => { destroyFarthest(); startPlayer(id, urls, container); };
+  btn.onclick = () => { destroyFarthest(); ytId ? startYouTube(id, ytId, container) : startPlayer(id, urls, container); };
   wrap.appendChild(btn);
   container.replaceChildren(wrap);
+}
+
+function startYouTube(id, ytId, container) {
+  if (activeHls.has(id)) return;
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
+  iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+  iframe.allowFullscreen = true;
+  iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0';
+  container.style.position = 'relative';
+  container.replaceChildren(iframe);
+  activeHls.set(id, { hls: null, video: null, container, iframe });
 }
 
 function startPlayer(id, urls, container) {
@@ -112,16 +125,20 @@ const observer = new IntersectionObserver((entries) => {
     const card = entry.target;
     const id = card.dataset.id;
     const urls = JSON.parse(card.dataset.urls || '[]');
-    if (!id || !urls.length) continue;
+    const ytId = card.dataset.ytid || null;
+    if (!id || (!urls.length && !ytId)) continue;
     const videoBox = card.querySelector('.cam-video');
     if (!videoBox) continue;
 
     if (entry.isIntersecting) {
-      if (!activeHls.has(id) && activeHls.size < MAX_PLAYERS) startPlayer(id, urls, videoBox);
-      else if (!activeHls.has(id)) showPlayButton(id, urls, videoBox);
+      if (!activeHls.has(id) && activeHls.size < MAX_PLAYERS) {
+        ytId ? startYouTube(id, ytId, videoBox) : startPlayer(id, urls, videoBox);
+      } else if (!activeHls.has(id)) {
+        showPlayButton(id, urls, videoBox, ytId);
+      }
     } else {
       destroyPlayer(id);
-      showPlayButton(id, urls, videoBox);
+      showPlayButton(id, urls, videoBox, ytId);
     }
   }
 }, { rootMargin: '200px 0px' });
@@ -140,11 +157,13 @@ function inferirZona(titulo) {
 function criarCard(cam) {
   const card = el('article', 'cam');
   card.dataset.id = cam.id;
-  const urls = Array.isArray(cam.streamUrl) ? cam.streamUrl : [cam.streamUrl];
+  const isYt = cam.streamType === 'youtube' && cam.youtubeId;
+  const urls = isYt ? [] : (Array.isArray(cam.streamUrl) ? cam.streamUrl : [cam.streamUrl]);
   card.dataset.urls = JSON.stringify(urls);
+  if (isYt) card.dataset.ytid = cam.youtubeId;
 
   const videoBox = el('div', 'cam-video');
-  showPlayButton(cam.id, urls, videoBox);
+  showPlayButton(cam.id, urls, videoBox, isYt ? cam.youtubeId : null);
   card.appendChild(videoBox);
 
   const info = el('div', 'cam-info');
@@ -169,11 +188,12 @@ function fetchComTimeout(url, ms = 30000) {
 }
 
 async function carregarTudo() {
-  const [resSV, resWZ, resSC, resCAV] = await Promise.allSettled([
+  const [resSV, resWZ, resSC, resCAV, resSKY] = await Promise.allSettled([
     fetchComTimeout('/api/surfview', 45000),
     fetchComTimeout('/api/macumba', 45000),
     fetchComTimeout('/api/surfconnect', 45000),
     fetchComTimeout('/api/climaaovivo', 45000),
+    fetchComTimeout('/api/skyline', 45000),
   ]);
 
   const todas = [];
@@ -228,6 +248,15 @@ async function carregarTudo() {
 
   if (resCAV.status === 'fulfilled') {
     const cams = (resCAV.value.cameras || []).filter(c => c.streamUrl);
+    for (const c of cams) {
+      if (idsVistos.has(c.id)) continue;
+      idsVistos.add(c.id);
+      todas.push(c);
+    }
+  }
+
+  if (resSKY.status === 'fulfilled') {
+    const cams = (resSKY.value.cameras || []).filter(c => c.youtubeId);
     for (const c of cams) {
       if (idsVistos.has(c.id)) continue;
       idsVistos.add(c.id);

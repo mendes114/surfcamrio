@@ -16,6 +16,7 @@ import {
   montarUrlOpenMeteoTempo,
 } from './picos.mjs';
 import { buscarCamerasClimaAoVivo } from './climaaovivo.mjs';
+import { buscarCamerasSkyline } from './skyline.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PASTA_RAIZ = resolve(__dirname, '..');
@@ -190,6 +191,17 @@ export function criarServidor({
         } catch (erro) {
           return enviarJson(res, 502, {
             erro: erro?.message || 'Falha ao buscar Clima ao Vivo.',
+          });
+        }
+      }
+
+      if (metodo === 'GET' && caminho === '/api/skyline') {
+        try {
+          const cameras = await buscarCamerasSkyline(fetchImpl);
+          return enviarJson(res, 200, { total: cameras.length, cameras });
+        } catch (erro) {
+          return enviarJson(res, 502, {
+            erro: erro?.message || 'Falha ao buscar SkylineWebcams.',
           });
         }
       }
