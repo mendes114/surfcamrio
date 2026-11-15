@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Surf Cam Rio</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <div class="topo-inner">
+        <div class="topo-marca">
+          <h1>Surf Cam <span class="marca-destaque">Rio</span></h1>
+          <p class="subtitulo">Câmeras ao vivo</p>
+        </div>
+        <div class="topo-dir">
+          <span id="contagem" class="contagem"></span>
+          <span id="status" class="status-pill">Carregando...</span>
+          <button id="btn-refresh" class="btn-icon" type="button" title="Atualizar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container" id="main">
+      <div id="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Buscando câmeras ao vivo...</p>
+      </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

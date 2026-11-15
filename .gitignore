@@ -1,0 +1,12 @@
+.env
+.claude/
+.windy-key.local.json
+cameras-salvas.json
+cameras-descobertas.json
+surfview-streams.json
+node_modules/
+data/
+__pycache__/
+*.log
+.DS_Store
+Thumbs.db

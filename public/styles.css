@@ -1,0 +1,315 @@
+:root {
+  --bg: #0a0a0a;
+  --bg-card: #141414;
+  --bg-hover: #1a1a1a;
+  --borda: #262626;
+  --texto: #fafafa;
+  --texto-sec: #a1a1aa;
+  --verde: #22c55e;
+  --verde-dim: rgba(34, 197, 94, 0.12);
+  --azul: #3b82f6;
+  --raio: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--texto);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Header ---- */
+.topo {
+  border-bottom: 1px solid var(--borda);
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topo-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topo-marca h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.marca-destaque {
+  color: var(--verde);
+}
+
+.subtitulo {
+  font-size: 12px;
+  color: var(--texto-sec);
+  font-weight: 400;
+}
+
+.topo-dir {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.contagem {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--verde);
+}
+
+.status-pill {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bg-card);
+  border: 1px solid var(--borda);
+  color: var(--texto-sec);
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  background: var(--bg-card);
+  color: var(--texto-sec);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-icon:hover {
+  background: var(--bg-hover);
+  color: var(--texto);
+}
+.btn-icon.is-spinning svg {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- Container ---- */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+/* ---- Loading ---- */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: var(--texto-sec);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--borda);
+  border-top-color: var(--verde);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ---- Zone sections ---- */
+.zona {
+  margin-bottom: 40px;
+}
+
+.zona-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.zona-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.zona-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--verde-dim);
+  color: var(--verde);
+}
+
+/* ---- Camera grid ---- */
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .grade { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
+}
+
+/* ---- Camera card ---- */
+.cam {
+  background: var(--bg-card);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.cam:hover {
+  border-color: #333;
+}
+
+.cam-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cam-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cam-info {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cam-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cam-fonte {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--verde-dim);
+  color: var(--verde);
+}
+
+.cam-placeholder {
+  color: var(--texto-sec);
+  font-size: 12px;
+  text-align: center;
+  padding: 12px;
+}
+
+.cam-play-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+}
+
+.cam-play-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+}
+.cam-play-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1);
+}
+
+.cam-erro {
+  color: #71717a;
+  font-size: 12px;
+}
+
+/* ---- Expand / fullscreen ---- */
+.cam-video .btn-expand {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 2;
+}
+.cam:hover .btn-expand { opacity: 1; }
+
+/* ---- Live dot ---- */
+.dot-live {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--verde);
+  margin-right: 6px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ---- Empty state ---- */
+.vazio {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--texto-sec);
+  font-size: 14px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 600px) {
+  .grade { grid-template-columns: 1fr; }
+  .topo-inner { padding: 12px 16px; }
+  .container { padding: 16px 16px 40px; }
+  .topo-marca h1 { font-size: 18px; }
+}

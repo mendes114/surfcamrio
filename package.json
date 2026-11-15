@@ -1,0 +1,10 @@
+{
+  "name": "cameras-recreio-macumba",
+  "version": "1.0.0",
+  "description": "Painel ao vivo de câmeras públicas e condições do mar para Praia do Recreio e Praia da Macumba (RJ)",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}
