@@ -169,10 +169,11 @@ function fetchComTimeout(url, ms = 30000) {
 }
 
 async function carregarTudo() {
-  const [resSV, resWZ, resSC] = await Promise.allSettled([
+  const [resSV, resWZ, resSC, resCAV] = await Promise.allSettled([
     fetchComTimeout('/api/surfview', 45000),
     fetchComTimeout('/api/macumba', 45000),
     fetchComTimeout('/api/surfconnect', 45000),
+    fetchComTimeout('/api/climaaovivo', 45000),
   ]);
 
   const todas = [];
@@ -221,6 +222,15 @@ async function carregarTudo() {
       if (bases.has(base)) continue;
       idsVistos.add(c.id);
       if (!c.zona) c.zona = inferirZona(c.titulo);
+      todas.push(c);
+    }
+  }
+
+  if (resCAV.status === 'fulfilled') {
+    const cams = (resCAV.value.cameras || []).filter(c => c.streamUrl);
+    for (const c of cams) {
+      if (idsVistos.has(c.id)) continue;
+      idsVistos.add(c.id);
       todas.push(c);
     }
   }

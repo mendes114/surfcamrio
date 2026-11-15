@@ -15,6 +15,7 @@ import {
   montarUrlOpenMeteoMar,
   montarUrlOpenMeteoTempo,
 } from './picos.mjs';
+import { buscarCamerasClimaAoVivo } from './climaaovivo.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PASTA_RAIZ = resolve(__dirname, '..');
@@ -178,6 +179,17 @@ export function criarServidor({
         } catch (erro) {
           return enviarJson(res, 502, {
             erro: erro?.message || 'Falha ao buscar dados do SurfView.',
+          });
+        }
+      }
+
+      if (metodo === 'GET' && caminho === '/api/climaaovivo') {
+        try {
+          const cameras = await buscarCamerasClimaAoVivo(fetchImpl);
+          return enviarJson(res, 200, { total: cameras.length, cameras });
+        } catch (erro) {
+          return enviarJson(res, 502, {
+            erro: erro?.message || 'Falha ao buscar Clima ao Vivo.',
           });
         }
       }
