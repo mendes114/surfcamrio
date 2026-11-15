@@ -179,13 +179,27 @@ function criarCard(cam) {
   card.dataset.id = cam.id;
   const isYt = cam.streamType === 'youtube' && cam.youtubeId;
   const isIframe = cam.streamType === 'iframe' && cam.iframeUrl;
-  const urls = (isYt || isIframe) ? [] : (Array.isArray(cam.streamUrl) ? cam.streamUrl : [cam.streamUrl]);
+  const isExterno = cam.streamType === 'externo' && cam.linkExterno;
+  const urls = (isYt || isIframe || isExterno) ? [] : (Array.isArray(cam.streamUrl) ? cam.streamUrl : [cam.streamUrl]);
   card.dataset.urls = JSON.stringify(urls);
   if (isYt) card.dataset.ytid = cam.youtubeId;
   if (isIframe) card.dataset.iframeurl = cam.iframeUrl;
 
   const videoBox = el('div', 'cam-video');
-  showPlayButton(cam.id, urls, videoBox, isYt ? cam.youtubeId : null, isIframe ? cam.iframeUrl : null);
+  if (isExterno) {
+    const wrap = el('div', 'cam-play-wrap');
+    const link = document.createElement('a');
+    link.href = cam.linkExterno;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.className = 'cam-play-btn';
+    link.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/><path d="M5 5v14h14v-7h2v7c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h7v2H5z" fill="white"/></svg>';
+    link.title = 'Abrir câmera em nova aba';
+    wrap.appendChild(link);
+    videoBox.appendChild(wrap);
+  } else {
+    showPlayButton(cam.id, urls, videoBox, isYt ? cam.youtubeId : null, isIframe ? cam.iframeUrl : null);
+  }
   card.appendChild(videoBox);
 
   const info = el('div', 'cam-info');
@@ -288,7 +302,7 @@ async function carregarTudo() {
   }
 
   if (resIFR.status === 'fulfilled') {
-    const cams = (resIFR.value.cameras || []).filter(c => c.iframeUrl);
+    const cams = (resIFR.value.cameras || []).filter(c => c.iframeUrl || c.linkExterno);
     for (const c of cams) {
       if (idsVistos.has(c.id)) continue;
       idsVistos.add(c.id);

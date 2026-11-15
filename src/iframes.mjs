@@ -1,20 +1,20 @@
 /**
- * Câmeras via iframe — players públicos embeddáveis (JMVStream, etc.)
+ * Câmeras externas — links para sites com player próprio (não embeddável).
  */
 
-const CAMERAS_IFRAME = [
+const CAMERAS_EXTERNAS = [
   {
-    id: 'iframe-praiabarra',
-    titulo: 'Praia da Barra da Tijuca',
-    iframeUrl: 'https://player.jmvstream.com/ipcam/qSFHf1xz4MbxfE6hHibOwxs5SwBgrw',
+    id: 'ext-praiabarra',
+    titulo: 'Praia da Barra · 24h (PraiaBarra)',
+    linkExterno: 'https://praiabarra.com.br/',
     zona: 'barra',
     fonte: 'praiabarra',
   },
 ];
 
 export function buscarCamerasIframe() {
-  return CAMERAS_IFRAME.map((cam) => ({
+  return CAMERAS_EXTERNAS.map((cam) => ({
     ...cam,
-    streamType: 'iframe',
+    streamType: 'externo',
   }));
 }
